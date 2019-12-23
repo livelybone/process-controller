@@ -75,7 +75,9 @@ export default class ProcessController {
    * 运行，order 值越小越先执行，返回当前流程的最后处理结果
    * */
   run() {
-    if (this.isRunning) return this.currProcessResult!
+    if (this.isRunning || this.currSteps.length < 1) {
+      return this.currProcessResult!
+    }
 
     this.currProcessResult = new Promise(res => {
       this.resolveFn = res
