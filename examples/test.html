@@ -10,8 +10,12 @@
 <div id="module"></div>
 
 <script>
-var module = document.getElementById('module')
+// var module = document.getElementById('module')
 // do something ...
+  ProcessController.addStep(() => Promise.resolve().then(() => console.log(1)), 1)
+  ProcessController.addStep(() => Promise.resolve().then(() => console.log(2)), 2)
+  ProcessController.addStep(() => Promise.resolve().then(() => console.log(3)), 0)
+  ProcessController.run()
 </script>
 </body>
 </html>
