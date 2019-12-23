@@ -6,62 +6,73 @@ interface ProcessStep {
    * 次序
    * */
   order: number
+
   callback<T extends any[], RT extends any>(...args: T): Promise<RT>
 }
+
 declare type StepId = ProcessStep['id']
 declare type StepOrder = ProcessStep['order']
 declare type StepCallback = ProcessStep['callback']
 
 declare class ProcessController {
   /**
-   * The currently running process queue
+   * The currently running step queue
    *
-   * 当前正在运行的流程队列
+   * 当前正在运行的流程的步骤队列
    * */
-  static currSteps: ProcessStep[]
+  currSteps: ProcessStep[]
 
   /**
    * Process history generated in the whole running time
    *
    * 程序运行产生的流程历史
    * */
-  static history: ProcessStep[][]
+  history: ProcessStep[][]
 
-  static isRunning: boolean
+  isRunning: boolean
 
-  static pausing: boolean
+  pausing: boolean
+
+  resolveFn: (data: any) => void
 
   /**
-   * The result of the previous process
+   * The result of the previous step
    *
-   * 上一个流程的处理结果
+   * 上一个步骤的处理结果
    * */
-  static currResult: Promise<any>
+  currStepResult: Promise<any>
+
+  /**
+   * The final result of the current process
+   *
+   * 当前流程的最后结果
+   * */
+  currProcessResult: Promise<any>
 
   /**
    * Add step
    *
    * 添加流程
    * */
-  static addStep(callback: StepCallback, order: StepOrder): StepId
+  addStep(callback: StepCallback, order: StepOrder): StepId
 
   /**
    * Correct the order of steps
    *
    * 校正流程的顺序
    * */
-  static correctOrder(): void
+  correctOrder(): void
 
   /**
-   * Prioritize the step with smaller order. When the process is already running, return null
+   * Prioritize the step with smaller order，return the final result of the current process
    *
-   * 运行，order 值越小越先执行。当流程正在运行时调用这个方法，将返回 null
+   * 运行，order 值越小越先执行，返回当前流程的最后处理结果
    * */
-  static run(): Promise<any> | null
+  run(): Promise<any>
 
-  static pause(): void
+  pause(): void
 
-  static stop(): void
+  stop(): void
 }
 
 export default ProcessController

@@ -1,6 +1,6 @@
 {
   "name": "process-controller",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A process controller base on promise that can be used in both browser and node",
   "main": "./lib/umd/index.js",
   "module": "./lib/es/index.js",
