@@ -6,10 +6,8 @@ interface ProcessStep {
    * 次序
    * */
   order: number
-
   callback<T extends any[], RT extends any>(...args: T): Promise<RT>
 }
-
 declare type StepId = ProcessStep['id']
 declare type StepOrder = ProcessStep['order']
 declare type StepCallback = ProcessStep['callback']
@@ -55,11 +53,11 @@ declare class ProcessController {
   static correctOrder(): void
 
   /**
-   * Run
+   * Prioritize the step with smaller order. When the process is already running, return null
    *
-   * 运行
+   * 运行，order 值越小越先执行。当流程正在运行时调用这个方法，将返回 null
    * */
-  static run(): Promise<any>
+  static run(): Promise<any> | null
 
   static pause(): void
 

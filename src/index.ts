@@ -63,11 +63,13 @@ export default class ProcessController {
   }
 
   /**
-   * Run
+   * Prioritize the step with smaller order. When the process is already running, return null
    *
-   * 运行
+   * 运行，order 值越小越先执行。当流程正在运行时调用这个方法，将返回 null
    * */
   static run() {
+    if (ProcessController.isRunning) return null
+
     ProcessController.isRunning = true
     const currHistorySteps: ProcessStep[] = ProcessController.pausing
       ? ProcessController.history[ProcessController.history.length - 1]
