@@ -1,7 +1,7 @@
 # process-controller
 [![NPM Version](http://img.shields.io/npm/v/process-controller.svg?style=flat-square)](https://www.npmjs.com/package/process-controller)
 [![Download Month](http://img.shields.io/npm/dm/process-controller.svg?style=flat-square)](https://www.npmjs.com/package/process-controller)
-![gzip with dependencies: kb](https://img.shields.io/badge/gzip--with--dependencies-kb-brightgreen.svg "gzip with dependencies: kb")
+![gzip with dependencies: 2kb](https://img.shields.io/badge/gzip--with--dependencies-2kb-brightgreen.svg "gzip with dependencies: 2kb")
 ![typescript](https://img.shields.io/badge/typescript-supported-blue.svg "typescript")
 ![pkg.module](https://img.shields.io/badge/pkg.module-supported-blue.svg "pkg.module")
 
