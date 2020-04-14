@@ -6,14 +6,22 @@ interface ProcessStep {
    * 次序
    * */
   order: number
-
   callback<T extends any[], RT extends any>(...args: T): Promise<RT>
+  [key: string]: any
+  [key: number]: any
+}
+declare enum ProcessStatus {
+  Waiting = 0,
+  Running = 1,
+  Pausing = 2,
 }
 
-declare type StepId = ProcessStep['id']
-declare type StepOrder = ProcessStep['order']
-declare type StepCallback = ProcessStep['callback']
-
+interface ProcessControllerOptions {
+  autoRun?(
+    step: ProcessStep,
+    ctx: ProcessController,
+  ): Promise<boolean> | boolean
+}
 declare class ProcessController {
   /**
    * The currently running step queue
@@ -29,11 +37,7 @@ declare class ProcessController {
    * */
   history: ProcessStep[][]
 
-  isRunning: boolean
-
-  pausing: boolean
-
-  resolveFn: (data: any) => void
+  status: ProcessStatus
 
   /**
    * The result of the previous step
@@ -49,12 +53,9 @@ declare class ProcessController {
    * */
   currProcessResult: Promise<any>
 
-  /**
-   * Add step
-   *
-   * 添加流程
-   * */
-  addStep(callback: StepCallback, order: StepOrder): StepId
+  options: Required<ProcessControllerOptions>
+
+  contructor(options?: ProcessControllerOptions): void
 
   /**
    * Correct the order of steps
@@ -62,6 +63,19 @@ declare class ProcessController {
    * 校正流程的顺序
    * */
   correctOrder(): void
+
+  /**
+   * Add step
+   *
+   * 添加流程
+   * */
+  addStep(
+    callback: ProcessStep['callback'],
+    order: ProcessStep['order'],
+    extraInfo?: {
+      [key in string | number]: any
+    },
+  ): ProcessStep
 
   /**
    * Prioritize the step with smaller order，return the final result of the current process
@@ -76,3 +90,4 @@ declare class ProcessController {
 }
 
 export default ProcessController
+export { ProcessControllerOptions, ProcessStatus, ProcessStep }

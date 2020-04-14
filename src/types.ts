@@ -8,9 +8,13 @@ export interface ProcessStep {
   order: number
 
   callback<T extends any[], RT extends any>(...args: T): Promise<RT>
+
+  [key: string]: any
+  [key: number]: any
 }
 
-export type StepId = ProcessStep['id']
-export type StepOrder = ProcessStep['order']
-
-export type StepCallback = ProcessStep['callback']
+export enum ProcessStatus {
+  Waiting = 0,
+  Running = 1,
+  Pausing = 2,
+}

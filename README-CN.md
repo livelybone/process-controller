@@ -39,7 +39,33 @@ npm i -S process-controller
 
 ## Usage
 ```js
-import * as ProcessController from 'process-controller'
+import ProcessController from 'process-controller'
+
+// Simple example: Auto run
+// modal1 will show after modal2 clicked to confirm
+const controller = new ProcessController({ autoRun: () => true })
+
+controller.addStep(() => {
+  return new Promise((res, rej) => {
+    // modal1
+    ConfirmModal.open({
+      content: 'some content of the confirm modal1',
+      onConfirm: () => res(),
+      onReject: () => rej(),
+    })
+  })
+}, 2)
+
+controller.addStep(() => {
+  return new Promise((res, rej) => {
+    // modal2
+    ConfirmModal.open({
+      content: 'some content of the confirm modal2',
+      onConfirm: () => res(),
+      onReject: () => rej(),
+    })
+  })
+}, 1)
 ```
 
 在 HTML 文件中直接引用，你可以在 [CDN: unpkg](https://unpkg.com/process-controller/lib/umd/) 看到你能用到的所有 js 脚本

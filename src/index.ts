@@ -1,5 +1,14 @@
 import simpleUniqueId from '@livelybone/simple-unique-id'
-import { ProcessStep, StepCallback, StepId, StepOrder } from './types'
+import { ProcessStatus, ProcessStep } from './types'
+
+export * from './types'
+
+export interface ProcessControllerOptions {
+  autoRun?(
+    step: ProcessStep,
+    ctx: ProcessController,
+  ): Promise<boolean> | boolean
+}
 
 export default class ProcessController {
   /**
@@ -14,13 +23,9 @@ export default class ProcessController {
    *
    * 程序运行产生的流程历史
    * */
-  history: ProcessStep[][] = [[]]
+  history: ProcessStep[][] = []
 
-  isRunning: boolean = false
-
-  pausing: boolean = false
-
-  resolveFn!: (data: any) => void
+  status: ProcessStatus = ProcessStatus.Waiting
 
   /**
    * The result of the previous step
@@ -36,28 +41,13 @@ export default class ProcessController {
    * */
   currProcessResult: Promise<any> = Promise.resolve()
 
-  /**
-   * Add step
-   *
-   * 添加流程
-   * */
-  addStep(callback: StepCallback, order: StepOrder): StepId {
-    const indexInsertBefore = this.currSteps.findIndex((step, index) => {
-      if (this.isRunning && index === 0) return false
-      return step.order > order
-    })
-    const id = simpleUniqueId()
-    if (indexInsertBefore !== -1) {
-      this.currSteps.splice(indexInsertBefore, 0, {
-        callback,
-        order,
-        id,
-      })
-    } else {
-      this.currSteps.push({ callback, order, id })
-    }
+  options!: Required<ProcessControllerOptions>
 
-    return id
+  contructor(options?: ProcessControllerOptions) {
+    this.options = {
+      ...options,
+      autoRun: (options && options.autoRun) || (() => false),
+    }
   }
 
   /**
@@ -70,25 +60,46 @@ export default class ProcessController {
   }
 
   /**
+   * Add step
+   *
+   * 添加流程
+   * */
+  addStep(
+    callback: ProcessStep['callback'],
+    order: ProcessStep['order'],
+    extraInfo?: { [key in string | number]: any },
+  ): ProcessStep {
+    const id = simpleUniqueId()
+    const step = { ...extraInfo, callback, order, id }
+    this.currSteps.push(step)
+    this.correctOrder()
+
+    Promise.resolve(this.options.autoRun(step, this)).then(run => {
+      if (run) this.run()
+    })
+
+    return step
+  }
+
+  /**
    * Prioritize the step with smaller order，return the final result of the current process
    *
    * 运行，order 值越小越先执行，返回当前流程的最后处理结果
    * */
   run() {
-    if (this.isRunning || this.currSteps.length < 1) {
+    if (this.status === ProcessStatus.Running || this.currSteps.length < 1) {
       return this.currProcessResult!
     }
 
-    this.currProcessResult = new Promise(res => {
-      this.resolveFn = res
-    })
-    this.isRunning = true
-    const currHistorySteps: ProcessStep[] = this.pausing
-      ? this.history[this.history.length - 1]
-      : []
-    if (!this.pausing) {
-      this.history.push(currHistorySteps)
-    } else this.pausing = false
+    if (this.status !== ProcessStatus.Pausing) {
+      this.history.push([])
+      let resolveFn: any
+      this.currProcessResult = new Promise(res => {
+        resolveFn = res
+      })
+      ;(this.currProcessResult as any).resolveFn = resolveFn
+    }
+    const currHistorySteps = this.history[this.history.length - 1]
 
     const runOne = (step: ProcessStep) => {
       this.currStepResult = this.currStepResult.then((...args) =>
@@ -101,27 +112,30 @@ export default class ProcessController {
         if (stepItem && step.id === stepItem.id) {
           this.currSteps.shift()
         }
-        if (this.currSteps.length < 1) this.resolveFn(data)
+        if (this.currSteps.length < 1)
+          (this.currProcessResult as any).resolveFn(data)
       })
     }
     const fn = (): Promise<any> => {
-      if (this.pausing || this.currSteps.length < 1) {
+      if (this.status === ProcessStatus.Pausing || this.currSteps.length < 1) {
         return Promise.resolve()
       }
       return runOne(this.currSteps[0]).then(() => fn())
     }
 
+    this.status = ProcessStatus.Running
     return fn().then(() => {
-      this.isRunning = false
+      this.status = ProcessStatus.Waiting
       return this.currProcessResult
     })
   }
 
   pause() {
-    this.pausing = true
+    this.status = ProcessStatus.Pausing
   }
 
   stop() {
     this.currSteps = []
+    this.status = ProcessStatus.Waiting
   }
 }
