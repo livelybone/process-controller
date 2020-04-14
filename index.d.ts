@@ -6,10 +6,14 @@ interface ProcessStep {
    * 次序
    * */
   order: number
+
   callback<T extends any[], RT extends any>(...args: T): Promise<RT>
+
   [key: string]: any
+
   [key: number]: any
 }
+
 declare enum ProcessStatus {
   Waiting = 0,
   Running = 1,
@@ -22,6 +26,7 @@ interface ProcessControllerOptions {
     ctx: ProcessController,
   ): Promise<boolean> | boolean
 }
+
 declare class ProcessController {
   /**
    * The currently running step queue
