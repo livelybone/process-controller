@@ -43,7 +43,7 @@ export default class ProcessController {
 
   options!: Required<ProcessControllerOptions>
 
-  contructor(options?: ProcessControllerOptions) {
+  constructor(options?: ProcessControllerOptions) {
     this.options = {
       ...options,
       autoRun: (options && options.autoRun) || (() => false),

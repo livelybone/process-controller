@@ -55,7 +55,7 @@ declare class ProcessController {
 
   options: Required<ProcessControllerOptions>
 
-  contructor(options?: ProcessControllerOptions): void
+  constructor(options?: ProcessControllerOptions)
 
   /**
    * Correct the order of steps
